@@ -1,0 +1,417 @@
+
+
+// Channels and Concurrency - Goroutines
+
+
+var wg sync.WaitGroup
+
+func main() {
+
+	wg.Add(2)
+
+	go task1()
+	go task2()
+
+	wg.Wait()
+
+}
+
+func task1() {
+	fmt.Println("Task 1")
+	wg.Done()
+}
+
+func task2() {
+	fmt.Println("Task 2")
+	wg.Done()
+}
+
+
+****************************************
+
+var wg sync.WaitGroup
+
+func main() {
+	// Add 1 to the WaitGroup counter — we're going to wait for 1 goroutine
+	wg.Add(1)
+
+	// Start the first runner as a goroutine (runs in the background)
+	go runner1()
+
+	// Wait here until the runner1 goroutine calls wg.Done()
+	wg.Wait()
+
+	// Once runner1 finishes, call runner2
+	runner2()
+}
+
+func runner1() {
+	// Print a message
+	fmt.Println("First Runner")
+
+	// Mark this goroutine as done — this will let wg.Wait() continue
+	wg.Done()
+}
+
+func runner2() {
+	// Print a message after runner1 has finished
+	fmt.Println("Second Runner")
+}
+
+
+****************************************
+
+
+	// declare a channel of type int
+	ch := make(chan int)
+
+	// to send a value into a channel
+	ch <- 5
+
+	// to receive a value from a channel
+	value := <-ch
+
+
+
+****************************************
+
+
+
+func sayHello(id int, ch chan string) {
+	msg := fmt.Sprintf("Worker %d done", id)
+	ch <- msg
+
+}
+
+func main() {
+
+	ch := make(chan string)
+
+	for i := 1; i <= 5; i++ {
+		go sayHello(i, ch)
+	}
+
+	for i := 1; i <= 5; i++ {
+		msg := <-ch
+		fmt.Println(msg)
+	}
+}
+
+Worker 5 done
+Worker 2 done
+Worker 1 done
+Worker 4 done
+Worker 3 done
+
+
+****************************************
+
+type circle struct {
+	r float64
+}
+
+func (c circle) display(ch chan string) {
+	ch <- "A Circle"
+
+}
+
+func (c circle) area(ch chan float64) {
+	msg := math.Pi * c.r * c.r
+	ch <- msg
+}
+
+func main() {
+
+	ch1 := make(chan float64)
+	ch2 := make(chan string)
+	c1 := circle{r: 5}
+
+	go c1.display(ch2)
+	go c1.area(ch1)
+
+	fmt.Println(ch1)
+	fmt.Println(<-ch2)
+}
+
+
+****************************************
+
+func worker(id int, ch chan int) {
+	// Pretend we are doing some work
+	fmt.Printf("Worker %d started\n", id)
+	time.Sleep(time.Second)
+	fmt.Printf("Worker %d finished\n", id)
+	<-ch
+}
+
+func main() {
+
+	ch := make(chan int)
+
+	for i := 1; i <= 5; i++ {
+		go worker(i, ch)
+		ch <- i
+	}
+}
+
+
+****************************************
+
+
+func main() {
+
+	message := make(chan string)
+
+	go func() {
+		time.Sleep(time.Second * 2)
+		message <- "Hello World"
+	}()
+
+	msg := <-message
+
+	fmt.Println(msg)
+
+}
+
+
+****************************************
+
+
+func greeting(message chan string) {
+	time.Sleep(time.Second * 2)
+	message <- "Hello World"
+}
+
+func main() {
+
+	message := make(chan string)
+
+	go greeting(message)
+
+	msg := <-message
+
+	fmt.Println(msg)
+
+}
+
+
+****************************************
+
+	//	range	//
+
+func main() {
+
+	ch := make(chan int, 3)
+	ch <- 1
+	ch <- 2
+	ch <- 3
+	close(ch)
+
+	for v := range ch {
+		fmt.Println(v)
+	}
+}
+
+
+****************************************
+
+	//  select	//
+
+func main() {
+
+	ch1 := make(chan int)
+	ch2 := make(chan int)
+
+	go func() {
+		time.Sleep(time.Second * 1)
+		ch1 <- 1
+	}()
+
+	go func() {
+		time.Sleep(time.Second * 2)
+		ch2 <- 2
+	}()
+
+	for range 2 {
+		select {
+		case msg1 := <-ch1:
+			fmt.Println("Received from ch1:", msg1)
+		case msg2 := <-ch2:
+			fmt.Println("Received from ch2:", msg2)
+		}
+	}
+
+}
+
+
+****************************************
+
+func logMessage(chEmails, chSms chan string) {
+
+	for {
+		select {
+		case email, ok := <-chEmails:
+			if !ok {
+				return
+			}
+			logEmail(email)
+		case sms, ok := <-chSms:
+			if !ok {
+				return
+			}
+			logSms(sms)
+		}
+	}
+}
+
+func logSms(sms string) {
+	fmt.Println("SMS:", sms)
+}
+
+func logEmail(email string) {
+	fmt.Println("E-Mail:", email)
+}
+
+func main() {
+
+	chEmail := make(chan string)
+	chSMS := make(chan string)
+
+	go logMessage(chEmail, chSMS)
+
+	chEmail <- "Email"
+	chSMS <- "SMS"
+
+}
+
+
+
+****************************************
+
+
+func buyFood(ch chan string) {
+	time.Sleep(2 * time.Second)
+	ch <- "I finished buying food"
+}
+
+func callFriends(ch chan string) {
+	time.Sleep(1 * time.Second)
+	ch <- "I finished calling friends!"
+}
+
+func main() {
+
+	fmt.Println("Picnic plannig started")
+
+	ch := make(chan string)
+
+	go buyFood(ch)
+	go callFriends(ch)
+
+	msg1 := <-ch
+	msg2 := <-ch
+
+	fmt.Println(msg1)
+	fmt.Println(msg2)
+	fmt.Println("All tasks done!")
+}
+
+
+****************************************
+
+
+func packItem(item string, ch chan string) {
+	time.Sleep(2 * time.Second)
+	ch <- "I packed " + item
+}
+
+func main() {
+
+	fmt.Println("Starting picnic packing ")
+
+	ch := make(chan string)
+
+	go packItem("sandwiches", ch)
+	go packItem("apples", ch)
+
+	msg1 := <-ch
+	msg2 := <-ch
+
+	fmt.Println(msg1)
+	fmt.Println(msg2)
+	fmt.Println("All items packed!")
+}
+
+
+****************************************
+
+
+func makeJuice(ch chan string) {
+	time.Sleep(2 * time.Second)
+	ch <- "Juice Made"
+}
+
+func sliceFruit(ch chan string) {
+	time.Sleep(1 * time.Second)
+	ch <- "Fruit scliced"
+}
+
+func main() {
+
+	fmt.Println("Starting picnic prep ")
+
+	ch := make(chan string, 2)
+
+	go makeJuice(ch)
+	go sliceFruit(ch)
+
+	msg1 := <-ch
+	msg2 := <-ch
+
+	fmt.Println(msg1)
+	fmt.Println(msg2)
+	fmt.Println("Prep Done")
+}
+
+
+****************************************
+
+
+type PicnicItem struct {
+	Name     string
+	Quantity int
+}
+
+func packMoreItem(item *PicnicItem, extraQy int, ch chan string) {
+	time.Sleep(1 * time.Second)
+	item.Quantity = item.Quantity + extraQy
+
+	ch <- fmt.Sprintf("Added %d more %s, now we have %d", extraQy, item.Name, item.Quantity)
+}
+
+func main() {
+	fmt.Println("Starting picnic packing.")
+
+	sandwiches := PicnicItem{Name: "sandwiches", Quantity: 5}
+	apples := PicnicItem{Name: "apples", Quantity: 3}
+	water := PicnicItem{Name: "water", Quantity: 2}
+
+	items := []*PicnicItem{&sandwiches, &apples, &water}
+
+	ch := make(chan string, 3)
+
+	go packMoreItem(items[0], 3, ch)
+	go packMoreItem(items[1], 4, ch)
+	go packMoreItem(items[2], 2, ch)
+
+	for i := 0; i < len(items); i++ {
+		message := <-ch
+		fmt.Println(message)
+	}
+
+	for _, item := range items {
+		fmt.Printf("%s : %d\n", item.Name, item.Quantity)
+	}
+
+	fmt.Println("All items packed")
+}

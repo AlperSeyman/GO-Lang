@@ -1,0 +1,143 @@
+
+
+m := make(map[KeyType]ValueType)
+
+languages := make(map[string]string)
+
+languages["JS"] = "Javascript"
+languages["RB"] = "Ruby"
+languages["PY"] = "Python"
+
+fmt.Println("List of all Languages: ", languages)
+fmt.Println("JS shorts for: ", languages["JS"])
+fmt.Println("RB shorts for: ", languages["RB"])
+fmt.Println("PY shorts for: ", languages["PY"])
+
+delete(languages, "RB") // delete RB from map
+
+fmt.Println("List of all Languages: ", languages)
+
+for _, value := range languages {
+	fmt.Println(value)
+}
+
+    ** Example **
+
+
+picnicItens := make(map[string]int)
+
+picnicItems["Alice"] = 3
+picnitItems["Bob"] = 2 
+picnicItems["Charlie"] = 5
+
+for person, items := range picnicItems{
+    fmt.Println("%s brought %d items\n, person, items)
+}
+
+
+    ** Example **
+
+type Guest struct {
+	Name         string
+	BringingGift bool
+	FavoriteFood string
+}
+
+func main() {
+	guestBook := make(map[string]Guest)
+
+	guestBook["guest1"] = Guest{Name: "Alice", BringingGift: true, FavoriteFood: "Burger"}
+	guestBook["guest2"] = Guest{Name: "Bob", BringingGift: false, FavoriteFood: "Pizza"}
+	guestBook["guest3"] = Guest{Name: "Charlie", BringingGift: true, FavoriteFood: "Pasta"}
+
+	for _, person := range guestBook {
+		fmt.Printf("Name: %s, Bringing Gift: %v, Favorite Food: %s\n", person.Name, person.BringingGift, person.FavoriteFood)
+	}
+}
+
+
+
+     ** Example **
+
+
+type User struct {
+	Name        string
+	PhoneNumber int
+}
+
+func getUserMap(names []string, phoneNumbers []int) (map[string]User, error) {
+	userMap := make(map[string]User)
+	if len(names) != len(phoneNumbers) {
+		return nil, errors.New("invalid sizes")
+	}
+	for i := 0; i < len(names); i++ {
+		name := names[i]
+		phoneNumber := phoneNumbers[i]
+		userMap[name] = User{Name: name, PhoneNumber: phoneNumber}
+
+	}
+	return userMap, nil
+}
+
+func main() {
+	names := []string{"Alice", "Bob", "Charlie"}
+	phoneNumbers := []int{11111, 22222, 33333}
+
+	users, err := getUserMap(names, phoneNumbers)
+	if err != nil {
+		fmt.Println("Error", err)
+		return
+	}
+	for _, user := range users {
+		fmt.Printf("Name : %s, Phone Number : %d\n", user.Name, user.PhoneNumber)
+	}
+}
+
+	** Example ** 
+
+// Nested Map //
+
+map[string]map[string]string
+map[string]map[string]int
+map[rune]map[string]int
+map[int]map[string]map[string]int
+
+hits := make(map[string]map[string]string)
+
+	if hits["user1"] == nil {
+		hits["user1"] = make(map[string]string)
+	}
+
+	hits["user1"]["name"] = "Alper"
+
+	val, ok := hits["user1"]["sname"]
+	if ok {
+		fmt.Println(val)
+	} else {
+		fmt.Println("Not Found")
+	}
+
+	** Example **
+
+func getNameCounts(names []string) map[rune]map[string]int {
+	counts := make(map[rune]map[string]int)
+	for _, name := range names {
+		if len(name) == 0 {
+			continue
+		}
+		firstChar := rune(name[0])
+		_, ok := counts[firstChar]
+		if !ok {
+			counts[firstChar] = make(map[string]int)
+		}
+		counts[firstChar][name]++
+	}
+	return counts
+}
+
+func main() {
+
+	names := []string{"Bily", "Bily", "Bob", "Joe"}
+
+	fmt.Print(getNameCounts(names))
+}
